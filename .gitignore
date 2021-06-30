@@ -1,0 +1,6 @@
+/activate
+/MongoDB
+/venv
+.env
+key
+key.pub

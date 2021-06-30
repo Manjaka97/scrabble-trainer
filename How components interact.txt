@@ -1,0 +1,30 @@
+This is for my own reference so I understand how components interact.
+
+What we learned using docker-compose and nginx for the first time:
+We have three main components:
+- a frontend react app
+- a backend django app, which mainly acts as a rest api (but also serves login and signup page).
+- a mongodb database
+On top of that, we also have a global nginx server.
+Each of these 4 components run in their own container, which are created and configured by docker-compose.yaml.
+All the images are already uploaded in dockerhub and are simply pulled when the containers are created.
+React listens to port 3000, and it is served by its own internal nginx server.
+Django listens to port 8000, and it is served by an internal gunicorn wsgi server.
+MongoDB listens to port 27017, but it is tightly integrated by Django (and djongo). It connects to django right away
+when properly configured in django's settings, so it does not need anything extra (like server configuration or manual connection).
+Nginx listens to port 80, which is the only way to communicate to our services from the outside world. For each request,
+Nginx looks at the server_name. We have already configured our DNS (managed by cloudflare which secures our connection
+automatically) to point to our server. If the request comes from scrabble.elvnosix.com, nginx proxy_passes the request to
+our frontend (internal) nginx server (listening at 3000) which serves our react app. When our react app makes api requests to
+scrabbleapi.elvnosix.com, this address still leads to the same global Nginx server, but nginx proxy_passes requests from this
+specific server_name to our backend gunicorn wsgi server which serves our django responses. Nginx also serves django static files
+because wsgi servers cannot do that.
+Nginx is able to recognize both frontend and backend servers automatically because docker-compose automatically puts these
+containers on a common network it created when first launched. They just need to be declared in upstream directives with the 
+container names and the appropriate ports in nginx.conf, then they can be proxy_passed to in location directives within the server
+block in that nginx.conf file.
+Finally, our database files will persist because mongo saves its data in our mounted mongo-volume (outside the container). We also
+have a static volume shared by nginx and django (because nginx needs to serve django's static files).
+
+NOTE TO SELF: if you forget how things work, just study django settings.py, docker-compose.yaml, the dockerfiles 
+in frontend, backend and server, and the nginx.conf files in frontend and server!

@@ -1,0 +1,48 @@
+version: "3.8"
+
+services:
+    server:
+        image: manjaka97/scrabble-trainer:nginx
+        restart: unless-stopped
+        ports:
+            - "80:80"
+        container_name: server
+        depends_on:
+            - frontend
+        volumes:
+            - static:/static
+    frontend:
+        image: manjaka97/scrabble-trainer:react
+        ports: 
+            - "3000:3000"
+        container_name: frontend
+    
+    backend:
+        image: manjaka97/scrabble-trainer:django
+        ports: 
+            - "8000:8000"
+        container_name: backend
+        # Making all the necessary migrations to use our database
+        command: sh -c "python manage.py makemigrations app && python manage.py migrate && python manage.py migrate app && gunicorn Config.wsgi:application --bind 0.0.0.0:8000"
+        volumes:
+            - static:/static
+        depends_on:
+            - db
+
+    db:
+        image: mongo
+        restart: unless-stopped
+        environment: 
+            MONGO_INITDB_ROOT_USERNAME: "${DB_USER}"
+            MONGO_INITDB_ROOT_PASSWORD: "${DB_PASSWORD}"
+        ports: 
+            - "27017:27017"
+        container_name: db
+        volumes:
+            # By default, mongo stores its data in /data/db. We mount mongo-volume (automatically created and managed by docker)
+            # into /data/db in our mongo container to persist data
+            - mongo-volume:/data/db
+
+volumes:
+    mongo-volume: # The volumes to be used must be listed this way
+    static:

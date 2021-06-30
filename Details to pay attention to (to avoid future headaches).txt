@@ -1,0 +1,26 @@
+- set sensitive info (password and such) as environment variables in a .env file. Both django and docker can use that.
+- CTRL + SHIFT + I console gives good debugging info. But actually, network tab gives the most detail for every request.
+- react changes will not be reflected if you don't npm run build because the react dockerfile shows that the build folder is copied
+into nginx html folder, and only that will be served.
+- csrf tag is needed in all post forms, and in headers in post requests
+- by default, django will set csrf token cookies in scrabbleapi.elvnosix.com. Our react app won't have access to it from its 
+domain (scrabble.elvnosix.com), even though it is needed. To fix that, in settings.py, we set CSRF_COOKIE_DOMAIN = '.elvnosix.com'
+The cookie is set at the top level domain, and the leading dot gives access to it to all subdomains.
+- credential:include needs to be in request params for authentication
+- CORS will block requests that are not from the same origin (as our django backend: scrabbleapi.elvnosix.com). Since our frontend
+is its own separate app, all requests from it will always be blocked. This is cause of 'Access-Control-Allow-Origin' stuff. We
+must specifically tell django in its settings.py file which origins are allowed. CORS_ORIGIN_WHITELIST = ['scrabble.elvnosix.com']
+allows our frontend app to make reqests to Django, but only when we specify in the request headers that the mode is 'cors'. Note that
+all this nice functionality is provided by django-cors-headers which must be pip installed and configured in django middleware and 
+apps. As recommended by the docs, cors middleware should be declared at the top of installed_app list.
+- As we saw above, some headers are necessary. When the request is cors, we must specifically tell django which headers are allowed
+in CORS_ALLOW_HEADERS. Be sure to put all the headers we use in our project in there.
+- When debug is False (and it should be in production), django will only work when its host is specified in ALLOWED_HOSTS. In our
+nginx.conf file, when we declared our django server in the upstream directive, we called it backend. When we proxy_pass, the request
+host will also be 'backend', so we must put that as our host in django's ALLOWED_HOSTS.
+- Similarly, when we declared our frontend server in the upstream directive, we called it frontend. When we proxy pass,
+we want to proxy_pass as scrabble.elvnosix.com because only this host has been given special permission (like cors). Therefore,
+we simply proxy_set_header Host $host to do the trick.
+- Djongo config is different from native databases. Password and username must be declared in a CLIENT block to work.
+- include /etc/nginx/mime.types must be present in nginx.conf server directive to apply css. 
+
