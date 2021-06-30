@@ -22,5 +22,7 @@ host will also be 'backend', so we must put that as our host in django's ALLOWED
 we want to proxy_pass as scrabble.elvnosix.com because only this host has been given special permission (like cors). Therefore,
 we simply proxy_set_header Host $host to do the trick.
 - Djongo config is different from native databases. Password and username must be declared in a CLIENT block to work.
-- include /etc/nginx/mime.types must be present in nginx.conf server directive to apply css. 
+- include /etc/nginx/mime.types must be present in nginx.conf server directive to apply css.
+- apparently create-react-app also creates a hidden .git file. We need to find and delete it since that would create two git 
+repositories, and we just need a global one with our react app inside.
 
