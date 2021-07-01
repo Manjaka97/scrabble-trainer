@@ -3,7 +3,7 @@
 <br />
 <p align="center">
   <a href="https://github.com/Manjaka97?tab=repositories">
-    <img src="images/react-scrabble/public/logo.svg" alt="Logo" width="250" height="50">
+    <img src="react-scrabble/public/logo.svg" alt="Logo" width="250" height="50">
   </a>
 
   <h3 align="center">SCRABBLE TRAINER</h3>
