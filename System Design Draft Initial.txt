@@ -1,0 +1,130 @@
+SCRABBLE TRAINER
+
+* Requirements:
+	. Play:
+		- Randomly generate set of letters or allow user to pick letters
+		- Compute # of possible words from set
+		- Show remaining # of unsolved words (if logged in, fetch # of already solved so far and display)
+		- Let user type in a word (or click on letters to form a word) and submit
+		- Check if word is in dictionary
+			- if yes: show success message, update # of unsolved words and show definition of word
+			- if no: show failure message
+	. Authentication:
+		- Username, email and password
+		- if logged in, save state of each set attempted (# unsolved, # solved, valid words submitted for that set)
+
+* Frontend:
+	. log in/out
+	. Play:
+		- Generate words:
+			- Generate random words with specified length
+			- Pick from list of attempted sets if logged in (search bar)
+			- Enter custom letters
+		- Shuffle letters
+		- Score: # solved/unsolved 
+			- (should be separate components that loads asynchronously because computing total possible words can be slow. More in remarks in *Logic)
+		- Definition of word
+-> Remarks:
+	- Can be done as a SPA
+	- log in/out top right
+	- left bar with search bar and (subset of) list attempted letters and progress
+	- Simple version: Type in word to try
+	- Better version: Click or drag and drop letters in try area
+	- Top to bottom:
+		- Score UI - Generate new words
+		- Try area (text input of GUI) - Submit button
+		- Letter set
+		- Shuffle button
+		- Definition
+	- On second thought, let's keep the length to always 7, to match a real Scrabble situation
+
+* Logic:
+	. Represent sets as 26-char integer string where each integer represents the number of occurences of that specific letter in the set
+	. for set of letters:
+		- compute all possible permutations
+		- check if permutation in dictionary [as stated in remarks, 13699 total permutations for a 7-letter set]
+			- if True:
+				- increment count
+				- add word and definition to local dictionary
+		- check submitted word against local dictionary [O(1)]:
+			- if in:
+				- if marked as found:
+					- display definition and already found message
+				- else:
+					- display definition and new word message
+					- mark as found
+			- store letter-set, local dictionary, # found
+-> Remarks:
+	- sum of permutations from p(1,7) to p(7,7) is 13699(!!) (# of api calls to check if word is valid)
+		- Displaying the # of possible words is very expensive
+		- ? Could we build our own dictionary and make our own api?
+	- On second thought, there is no need to represent the set as integer string. We can simply sort it and store as a normal string
+
+* Dictionary:
+	. json file
+	. store in django server
+	. when server is starts, load it to app
+
+* User Database:
+	. NoSQL - Probably MongoDB
+	. user_model:
+		- id
+		- username
+		- letter sets attempted:
+			- letter set
+			- dictionary:
+				- word
+				- found
+			- total words
+			- total words found
+-> Remarks:
+	- Embedding dictionary in letter sets attempted will result in large documents sizes.
+	There is no need to load the dictionary until it's needed. Proposed improvement:
+		- user_model:
+			- id
+			- username
+			- letter sets attempted:
+				- letter set
+				- dictionary_id
+				- total words
+				- total words found
+		- dictionary_model:
+			- id
+			- dictionary:
+				-  word
+				- definition
+	- The above improvement does not mark a word as found in the dictionary but keeps a separate list of found words.
+	This requires more memory, but if other users generate the same letter set, this dictionary is already cached and can be served without extra computation
+
+* Architecture:
+	. Frontend: React served by Nginx, sends requests to Django app
+	. Django App: Handles logic and database
+	. Database: MongoDB
+
+* API calls by frontend:
+	. Register(username, password):
+		- adds username to user document (authentication logic handled by Django)
+	. generate(length):
+		- returns random string letter set of length l
+	. play(set):
+		- return dictionary for set
+	. save_user(user_id):
+		- saves or updates user info to database
+	. load_user(user_id):
+		- returns loaded user info from database
+	. save(user_id, set):
+		- saves or updates dictionary and words found to database
+	. load(user_id, set):
+		- returns loaded dictionary and words found from database
+-> Remarks:
+	- The generate method can be handled by the frontend app
+	- Our Navbar componenent in React requires the username. It is better to provide a get_username() endpoint rather than have that single piece of component
+	load unnecessary extra data through load_user()
+* Optimization/Other Remarks:
+	- Ask user if they want to play with given letter set before computing dictionary. This prevents unnecessary computation if user generates a lot of sets.
+	- If motivated enough, users can cheat by finding a way to call play() with the right syntax and/or the right tool, and they will be able to retrieve the 
+	dictionary for the letter set they are playing. This is because we return the dictionary for every play session, and that makes it very fast to check if
+	a word is in the dictionary. The alternative would be to force user to check words one by one through an api call each time they submit a word. This would
+	be slower, but we will not be sending the whole dictionary so that will not be accessible. Another alternative would be to have Django serve react templates
+	instead of having a separate react frontend app. Then there would be no need to make api calls as the frontend and the back end would live in the same place.
+	For the purpose of this app, we can tolerate people "cheating", as the app is just a trainer. In a more competitive setting, the other alternatives would be better.
