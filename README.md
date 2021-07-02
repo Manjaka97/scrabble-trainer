@@ -9,6 +9,7 @@
   <h3 align="center">SCRABBLE TRAINER</h3>
 
   <p align="center">
+    https://scrabble.elvnosix.com:
     A WEBSITE TO INCREASE YOUR SCRABBLE SKILLS
     <br />
     <br />
@@ -35,7 +36,7 @@
 
 ![product-screenshot]
 
-Scrabble Trainer is a simple website to practice Scrabble. Simply choose 7 letters (or have them randomly generated) and hit play! The number of possible words will be displayed for you. You do not need to have an account to play, but if you are logged in, the number of words you have found so far for the current rack will also be displayed, and all your progress will be saved. To play, click on the letters on your rack to form a word, and submit it. If it is a valid word, its definition will even be shown! Have fun!
+[Scrabble Trainer](https://scrabble.elvnosix.com) is a simple website to practice Scrabble. Simply choose 7 letters (or have them randomly generated) and hit play! The number of possible words will be displayed for you. You do not need to have an account to play, but if you are logged in, the number of words you have found so far for the current rack will also be displayed, and all your progress will be saved. To play, click on the letters on your rack to form a word, and submit it. If it is a valid word, its definition will even be shown! Have fun!
 
 
 <!-- DEMO -->
