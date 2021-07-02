@@ -25,4 +25,5 @@ we simply proxy_set_header Host $host to do the trick.
 - include /etc/nginx/mime.types must be present in nginx.conf server directive to apply css.
 - apparently create-react-app also creates a hidden .git file. We need to find and delete it since that would create two git 
 repositories, and we just need a global one with our react app inside.
-
+- to deploy, all you need is docker installed, the docker-compose.yaml file and a .env file (not in this repository) with the 
+right username and password for mongo. Simply run docker-compose up. And don't forget to go to dns settings to make domain point to IP.
