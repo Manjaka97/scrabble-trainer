@@ -48,6 +48,7 @@
 
 * [React](https://reactjs.org/)
 * [Django](https://www.djangoproject.com/)
+* [Djongo](https://github.com/nesdis/djongo)
 * [MongoDB](https://www.mongodb.com/)
 * [Nginx](https://www.nginx.com/)
 
